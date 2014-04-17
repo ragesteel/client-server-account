@@ -20,7 +20,7 @@
         <guava.version>16.0.1</guava.version>
         <lombok.version>1.12.4</lombok.version>
         <junit.version>4.11</junit.version>
-        <derby.version>10.10.1.1</derby.version>
+        <derby.version>10.10.2.0</derby.version>
         <project.build.sourceEncoding>utf8</project.build.sourceEncoding>
     </properties>
     <dependencyManagement>

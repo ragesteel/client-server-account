@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet id="2014-04-17_08-21" author="rage" context="SCHEME">
+        <createTable tableName="ACCOUNT">
+            <column name="ID" type="INTEGER">
+                <constraints primaryKey="true" primaryKeyName="PK_ACCOUNT" />
+            </column>
+            <column name="AMOUNT" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
