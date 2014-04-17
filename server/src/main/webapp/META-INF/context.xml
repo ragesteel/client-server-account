@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Resource name="jdbc/accountDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              username="app"
+              password=""
+              driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
+              url="jdbc:derby:memory:account-service;create=true"
+              maxActive="8"
+              maxIdle="4"
+            />
+</Context>
