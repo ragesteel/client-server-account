@@ -1,5 +1,6 @@
 package ru.javatalks.fundamentals.account.server;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -15,24 +16,34 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
     private static final long AMOUNT = 100L;
 
     @Test
-    public void testConcurrentAdd() throws InterruptedException, SQLException {
+    public void testWithSleep() throws InterruptedException, SQLException {
         final CountDownLatch startLatch = new CountDownLatch(THREAD_COUNT);
         final CountDownLatch finishLatch = new CountDownLatch(THREAD_COUNT);
 
-        Runnable runnable = new Runnable() {
+        assertTask(new AbstractTask(startLatch, finishLatch) {
             @Override
-            public void run() {
-                try {
-                    startLatch.countDown();
-                    startLatch.await();
+            protected void runTask() throws SQLException, InterruptedException {
                     addAmount();
-                } catch (SQLException | InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    finishLatch.countDown();
-                }
             }
-        };
+        }, finishLatch);
+    }
+
+    @Test
+    public void testWithoutSleep() throws InterruptedException, SQLException {
+        final CountDownLatch startLatch = new CountDownLatch(THREAD_COUNT);
+        final CountDownLatch finishLatch = new CountDownLatch(THREAD_COUNT);
+
+        assertTask(new AbstractTask(startLatch, finishLatch) {
+            @Override
+            protected void runTask() throws SQLException, InterruptedException {
+                AccountServiceJdbc.addAmount(getConnection(), ACCOUNT_ID, AMOUNT);
+            }
+        }, finishLatch);
+    }
+
+    private void assertTask(AbstractTask addThenSleep, CountDownLatch finishLatch)
+            throws InterruptedException, SQLException {
+        Runnable runnable = addThenSleep;
         for (int i = 0; i < THREAD_COUNT; i++) {
             new Thread(runnable).start();
         }
@@ -40,6 +51,28 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
 
         long actualAmount = AccountServiceJdbc.getAmount(getConnection(), ACCOUNT_ID);
         assertEquals(THREAD_COUNT * AMOUNT, actualAmount);
+    }
+
+    @RequiredArgsConstructor
+    private abstract static class AbstractTask implements Runnable {
+
+        private final CountDownLatch startLatch;
+        private final CountDownLatch finishLatch;
+
+        @Override
+        public void run() {
+            try {
+                startLatch.countDown();
+                startLatch.await();
+                runTask();
+            } catch (SQLException | InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                finishLatch.countDown();
+            }
+        }
+
+        protected abstract void runTask() throws SQLException, InterruptedException;
     }
 
     private static void addAmount() throws SQLException, InterruptedException {
