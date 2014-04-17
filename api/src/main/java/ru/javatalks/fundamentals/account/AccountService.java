@@ -1,11 +1,13 @@
 package ru.javatalks.fundamentals.account;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
 public interface AccountService {
     /**
      * Возвращает текущий баланс или 0 если addAmount() не был вызван перед этим для заданного id.
      */
+    @CheckReturnValue
     @Nonnull
     Long getAmount(@Nonnull Integer id);
 
