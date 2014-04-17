@@ -25,6 +25,8 @@ public class AccountServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // TODO Получить значения параметров
         Integer id = 0;
+        req.getServletPath();
+        req.getContextPath();
         // Выполнить запрос
         Long amount = accountServiceJdbc.getAmount(id);
         // Вернуть результат

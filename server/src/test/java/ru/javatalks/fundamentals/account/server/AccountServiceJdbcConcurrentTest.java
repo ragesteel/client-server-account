@@ -12,7 +12,8 @@ import static org.junit.Assert.assertEquals;
 
 public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
     private static final int THREAD_COUNT = 100;
-    private static final int ACCOUNT_ID = 4;
+    private static final int ACCOUNT_ID1 = 4;
+    private static final int ACCOUNT_ID2 = 5;
     private static final long AMOUNT = 100L;
 
     @Test
@@ -23,9 +24,9 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
         assertTask(new AbstractTask(startLatch, finishLatch) {
             @Override
             protected void runTask() throws SQLException, InterruptedException {
-                    addAmount();
+                    addAmount(ACCOUNT_ID1);
             }
-        }, finishLatch);
+        }, finishLatch, ACCOUNT_ID1);
     }
 
     @Test
@@ -36,12 +37,12 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
         assertTask(new AbstractTask(startLatch, finishLatch) {
             @Override
             protected void runTask() throws SQLException, InterruptedException {
-                AccountServiceJdbc.addAmount(getConnection(), ACCOUNT_ID, AMOUNT);
+                AccountServiceJdbc.addAmount(getConnection(), ACCOUNT_ID2, AMOUNT);
             }
-        }, finishLatch);
+        }, finishLatch, ACCOUNT_ID2);
     }
 
-    private void assertTask(AbstractTask addThenSleep, CountDownLatch finishLatch)
+    private void assertTask(AbstractTask addThenSleep, CountDownLatch finishLatch, Integer id)
             throws InterruptedException, SQLException {
         Runnable runnable = addThenSleep;
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -49,7 +50,7 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
         }
         finishLatch.await();
 
-        long actualAmount = AccountServiceJdbc.getAmount(getConnection(), ACCOUNT_ID);
+        long actualAmount = AccountServiceJdbc.getAmount(getConnection(), id);
         assertEquals(THREAD_COUNT * AMOUNT, actualAmount);
     }
 
@@ -75,10 +76,10 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
         protected abstract void runTask() throws SQLException, InterruptedException;
     }
 
-    private static void addAmount() throws SQLException, InterruptedException {
+    private static void addAmount(Integer id) throws SQLException, InterruptedException {
         Connection connection = getConnection();
         connection.setAutoCommit(false);
-        AccountServiceJdbc.addAmountCycle(connection, ACCOUNT_ID, AMOUNT);
+        AccountServiceJdbc.addAmountCycle(connection, id, AMOUNT);
         MILLISECONDS.sleep((long)(Math.random() * 100));
         connection.commit();
     }
