@@ -37,16 +37,15 @@ public class AccountServiceJdbcConcurrentTest extends AbstractJdbcTest {
         assertTask(new AbstractTask(startLatch, finishLatch) {
             @Override
             protected void runTask() throws SQLException, InterruptedException {
-                AccountServiceJdbc.addAmount(getConnection(), ACCOUNT_ID2, AMOUNT);
+                AccountServiceJdbc.addAmountAndCommit(getConnection(), ACCOUNT_ID2, AMOUNT);
             }
         }, finishLatch, ACCOUNT_ID2);
     }
 
     private void assertTask(AbstractTask addThenSleep, CountDownLatch finishLatch, Integer id)
             throws InterruptedException, SQLException {
-        Runnable runnable = addThenSleep;
         for (int i = 0; i < THREAD_COUNT; i++) {
-            new Thread(runnable).start();
+            new Thread(addThenSleep).start();
         }
         finishLatch.await();
 

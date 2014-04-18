@@ -19,7 +19,7 @@ public class AccountServiceJdbcTest extends AbstractJdbcTest {
     @Test
     public void testCreation() throws SQLException {
         Connection connection = getConnection();
-        AccountServiceJdbc.addAmount(connection, 2, 100L);
+        AccountServiceJdbc.addAmountAndCommit(connection, 2, 100L);
         long actualAmount = AccountServiceJdbc.getAmount(connection, 2);
         assertEquals(100, actualAmount);
     }
@@ -27,8 +27,8 @@ public class AccountServiceJdbcTest extends AbstractJdbcTest {
     @Test
     public void testUpdateExisting() throws SQLException {
         Connection connection = getConnection();
-        AccountServiceJdbc.addAmount(connection, 3, 100L);
-        AccountServiceJdbc.addAmount(connection, 3, 100L);
+        AccountServiceJdbc.addAmountAndCommit(connection, 3, 100L);
+        AccountServiceJdbc.addAmountAndCommit(connection, 3, 100L);
         long actualAmount = AccountServiceJdbc.getAmount(connection, 3);
         assertEquals(200, actualAmount);
     }

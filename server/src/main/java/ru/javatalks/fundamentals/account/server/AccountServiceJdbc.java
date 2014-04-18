@@ -39,7 +39,7 @@ public class AccountServiceJdbc implements AccountService {
     @Override
     public void addAmount(@Nonnull Integer id, @Nonnull Long value) {
         try (Connection connection = dataSource.getConnection()) {
-            addAmount(connection, id, value);
+            addAmountAndCommit(connection, id, value);
         } catch (SQLException e) {
             log.log(WARNING, "Got exception", e);
             throw new RuntimeException("Error processing request", e);
@@ -61,7 +61,7 @@ public class AccountServiceJdbc implements AccountService {
     }
 
     @VisibleForTesting
-    protected static void addAmount(Connection connection, Integer id, Long value) throws SQLException {
+    protected static void addAmountAndCommit(Connection connection, Integer id, Long value) throws SQLException {
         connection.setAutoCommit(false);
         addAmountCycle(connection, id, value);
         connection.commit();
@@ -71,7 +71,7 @@ public class AccountServiceJdbc implements AccountService {
     protected static void addAmountCycle(Connection connection, Integer id, Long value) throws SQLException {
         while (true) {
             try {
-                addAmountWithoutTransaction(connection, id, value);
+                addAmount(connection, id, value);
             } catch (SQLIntegrityConstraintViolationException e) {
                 continue;
             }
@@ -80,8 +80,7 @@ public class AccountServiceJdbc implements AccountService {
     }
 
     @VisibleForTesting
-    protected static void addAmountWithoutTransaction(Connection connection, Integer id, Long value) throws SQLException {
-        // TODO Сделать повтор при ошибке коммита.
+    protected static void addAmount(Connection connection, Integer id, Long value) throws SQLException {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement("UPDATE account SET amount = amount + ? WHERE id = ?")) {
             preparedStatement.setLong(1, value);
