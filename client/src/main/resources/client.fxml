@@ -12,7 +12,7 @@
     <GridPane hgap="5.0" layoutX="0.0" layoutY="57.0">
       <children>
         <Label text="Server URL" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <TextField fx:id="serverUrl" prefWidth="200.0" text="http://localhost:8080/account-service/" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <TextField fx:id="serverUrl" prefWidth="200.0" text="http://localhost:8080/account-service/account/" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="0" />
         <Label text="Minimum ID" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="minimumId" prefWidth="200.0" text="1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
         <Label text="Maximum ID" GridPane.columnIndex="0" GridPane.rowIndex="2" />

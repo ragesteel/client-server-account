@@ -52,32 +52,24 @@ public class ClientController {
         startButton.disableProperty().bind(running);
         stopButton.disableProperty().bind(running.not());
         serverUrl.disableProperty().bind(running);
+        serverUrl.disableProperty().bind(running);
+        minimumId.disableProperty().bind(running);
+        maximumId.disableProperty().bind(running);
+
         actualCountOfReaders.textProperty().bind(countOfReadersUpdate.asString());
         actualCountOfWriters.textProperty().bind(countOfWritersUpdate.asString());
-
-        readerTaskManager = new TaskManager(new TaskFactory() {
-            @Nonnull
-            @Override
-            public AbstractTask createTask(@Nonnull TaskManager taskManager) {
-                return new ReaderTask(taskManager);
-            }
-        });
-
-        writerTaskManager = new TaskManager(new TaskFactory() {
-            @Nonnull
-            @Override
-            public AbstractTask createTask(@Nonnull TaskManager taskManager) {
-                return new WriterTask(taskManager);
-            }
-        });
 
         // Используем эту штуку, чтобы не обновлять количество нитей чаще чем нужно.
         // http://stackoverflow.com/questions/22772379/updating-ui-from-different-threads-in-javafx
         AnimationTimer updateTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                countOfReadersUpdate.setValue(readerTaskManager.getCurrentNumber());
-                countOfWritersUpdate.setValue(writerTaskManager.getCurrentNumber());
+                if (null != readerTaskManager) {
+                    countOfReadersUpdate.setValue(readerTaskManager.getCurrentNumber());
+                }
+                if (null != writerTaskManager) {
+                    countOfWritersUpdate.setValue(writerTaskManager.getCurrentNumber());
+                }
             }
         };
         updateTimer.start();
@@ -85,6 +77,12 @@ public class ClientController {
         countOfReaders.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+                if (null == readerTaskManager) {
+                    return;
+                }
+                if (!running.get()) {
+                    return;
+                }
                 readerTaskManager.setMaxNumber(Integer.valueOf(newValue));
             }
         });
@@ -92,6 +90,12 @@ public class ClientController {
         countOfWriters.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
+                if (null == writerTaskManager) {
+                    return;
+                }
+                if (!running.get()) {
+                    return;
+                }
                 writerTaskManager.setMaxNumber(Integer.valueOf(newValue));
             }
         });
@@ -101,6 +105,33 @@ public class ClientController {
     private void onStartAction() {
         running.setValue(true);
         log.log(INFO, "Starting...");
+
+        final String url = serverUrl.getText();
+        final int minId = Integer.valueOf(minimumId.getText());
+        final int maxId = Integer.valueOf(maximumId.getText());
+
+        if (null != readerTaskManager) {
+            readerTaskManager.close();
+        }
+        readerTaskManager = new TaskManager(new TaskFactory() {
+            @Nonnull
+            @Override
+            public AbstractTask createTask(@Nonnull TaskManager taskManager) {
+                return new ReaderTask(taskManager, url, minId, maxId);
+            }
+        });
+
+        if (null != writerTaskManager) {
+            writerTaskManager.close();
+        }
+        writerTaskManager = new TaskManager(new TaskFactory() {
+            @Nonnull
+            @Override
+            public AbstractTask createTask(@Nonnull TaskManager taskManager) {
+                return new WriterTask(taskManager, url, minId, maxId);
+            }
+        });
+
         readerTaskManager.setMaxNumber(Integer.valueOf(countOfReaders.getText()));
         writerTaskManager.setMaxNumber(Integer.valueOf(countOfWriters.getText()));
     }

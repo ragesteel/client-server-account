@@ -14,11 +14,14 @@ public abstract class AbstractTask implements Runnable {
     @Override
     public final void run() {
         taskManager.started();
+        init();
         while (taskManager.isRunning()) {
             perform();
         }
         taskManager.stopped();
     }
+
+    protected abstract void init();
 
     protected abstract void perform();
 }

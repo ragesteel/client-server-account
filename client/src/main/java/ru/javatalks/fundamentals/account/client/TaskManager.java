@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class TaskManager {
+public class TaskManager implements AutoCloseable {
     private final AtomicInteger currentNumber = new AtomicInteger();
     private final AtomicInteger maxNumber = new AtomicInteger();
     private final ThreadPoolExecutor executorService;
@@ -50,6 +50,13 @@ public class TaskManager {
 
     public int getCurrentNumber() {
         return currentNumber.get();
+    }
+
+    @Override
+    public void close() {
+        needToStop = true;
+        setMaxNumber(0);
+        executorService.shutdownNow();
     }
 
     public class ManagerThread implements Runnable {
