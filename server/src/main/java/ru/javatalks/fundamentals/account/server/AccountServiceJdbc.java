@@ -38,6 +38,10 @@ public class AccountServiceJdbc implements AccountService {
 
     @Override
     public void addAmount(@Nonnull Integer id, @Nonnull Long value) {
+        if (0 == value) {
+            // Небольшая оптимизация, ибо ноль можно не добавлять.
+            return;
+        }
         try (Connection connection = dataSource.getConnection()) {
             addAmountAndCommit(connection, id, value);
         } catch (SQLException e) {
